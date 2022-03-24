@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var mysql = require('mysql');
+var mysql = require('mysql2');
 
 const connectionProps = {
     host: 'schulhelfer.lima-db.de',
