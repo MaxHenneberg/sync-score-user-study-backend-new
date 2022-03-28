@@ -7,7 +7,7 @@ AWS.config.region = process.env.REGION
 const sns = new AWS.SNS();
 const ddb = new AWS.DynamoDB();
 
-const snsTopic =  process.env.TOPIC_USER_STUDY;
+const snsTopic = process.env.TOPIC_USER_STUDY;
 const TABLE_SYNC_SCORE = process.env.TABLE_SYNC_SCORE;
 console.log(`SyncScoreTable: ${TABLE_SYNC_SCORE}`)
 
@@ -23,6 +23,7 @@ router.get('/test', (req, res) => {
 
 function storeInDb(objectToBeStored) {
     const item = {
+        'id': {'S': `${generatePartitionKey()}`},
         'runId': {'S': `${objectToBeStored.runId}`},
         'study': {'S': `${objectToBeStored.study}`},
         'syncScore': {'S': objectToBeStored.syncScore}
@@ -46,7 +47,7 @@ function storeInDb(objectToBeStored) {
                     console.log(`New Message published: ${message}`);
                 }
             });
-        }else{
+        } else {
             console.log('User Study stored');
             sns.publish({
                 'Message': message,
@@ -65,6 +66,15 @@ function storeInDb(objectToBeStored) {
 
 function formatMessage(body) {
     return `Received new UserStudy :${JSON.stringify(body)}`;
+}
+
+function generatePartitionKey() {
+    const today = new Date();
+    const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    const timeStamp = date + '_' + time;
+    const randomNumber = Math.floor(Math.random() * 10000);
+    return 'ID_' + timeStamp + '_' + randomNumber;
 }
 
 module.exports = router;
